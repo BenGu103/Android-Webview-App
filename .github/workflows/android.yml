@@ -28,7 +28,7 @@ jobs:
 
     # 4. הפקודה שבונה את ה-APK בפועל (Debug)
     - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      run: ./gradlew app:assembleDebug
 
     # 5. מעלה את הקובץ המוכן כדי שתוכל להוריד אותו
     - name: Upload APK
