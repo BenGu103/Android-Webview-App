@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
         webSettings.setDatabaseEnabled(true);
 
         // 3. שינוי הזהות לדפדפן כרום רגיל (מונע חסימה של גוגל)
-        String newUA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36";
+        String newUA = "Mozilla/5.0 (Linux; Android 14; SM-S926B Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/144.0.7559.109 Mobile Safari/537.36";
         webSettings.setUserAgentString(newUA);
         
         // --- סוף השינויים החשובים ---
