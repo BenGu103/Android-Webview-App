@@ -10,43 +10,81 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="#E0E0E0"
-        android:gravity="center_vertical">
+        android:orientation="vertical"
+        android:background="#E0E0E0">
 
-        <!-- כפתור רענון -->
-        <Button
-            android:id="@+id/refresh_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:text="↻"
-            android:textSize="24sp"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
-        <!-- שורת הכתובת -->
-        <EditText
-            android:id="@+id/url_input"
-            android:layout_width="0dp"
+        <!-- שורה ראשונה: כפתורי ניווט + כתובת -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:padding="12dp"
-            android:hint="הזן כתובת..."
-            android:inputType="textUri"
-            android:imeOptions="actionGo"
-            android:singleLine="true"
-            android:background="@android:drawable/editbox_background"
-            android:textDirection="ltr" />
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:gravity="center_vertical">
 
-        <!-- כפתור סע / חפש -->
-        <Button
-            android:id="@+id/go_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="סע"
-            android:textSize="16sp" />
+            <!-- כפתור אחורה -->
+            <Button
+                android:id="@+id/back_button"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:text="◄"
+                android:textSize="20sp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <!-- כפתור קדימה -->
+            <Button
+                android:id="@+id/forward_button"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:text="►"
+                android:textSize="20sp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <!-- כפתור רענון -->
+            <Button
+                android:id="@+id/refresh_button"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:text="↻"
+                android:textSize="22sp"
+                android:background="?attr/selectableItemBackgroundBorderless" />
+
+            <!-- שורת הכתובת -->
+            <EditText
+                android:id="@+id/url_input"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:padding="10dp"
+                android:hint="הזן כתובת..."
+                android:inputType="textUri"
+                android:imeOptions="actionGo"
+                android:singleLine="true"
+                android:background="@android:drawable/editbox_background"
+                android:textDirection="ltr"
+                android:textSize="14sp" />
+
+            <!-- כפתור סע -->
+            <Button
+                android:id="@+id/go_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="סע"
+                android:textSize="14sp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp" />
+
+        </LinearLayout>
+
+        <!-- פס טעינה -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:visibility="gone"
+            android:progressTint="#2196F3" />
 
     </LinearLayout>
 
@@ -56,5 +94,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar" />
+
+    <!-- מיכל למסך מלא (וידאו) -->
+    <FrameLayout
+        android:id="@+id/fullscreen_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:visibility="gone" />
 
 </RelativeLayout>
