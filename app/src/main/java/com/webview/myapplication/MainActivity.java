@@ -11,20 +11,28 @@ import android.net.ConnectivityManager.NetworkCallback;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import android.webkit.CookieManager;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private WebView mWebView;
+    private EditText urlInput;
+    private Button refreshButton;
+    private Button goButton;
     private NetworkCallback networkCallback;
     
     // שנה את הכתובת הזו למה שאתה רוצה (למשל יוטיוב)
-    private final String myUrl = "https://www.google.com"; 
+    private final String myUrl = "https://www.youtube.com"; 
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -32,7 +40,12 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // חיבור לאלמנטים
         mWebView = findViewById(R.id.activity_main_webview);
+        urlInput = findViewById(R.id.url_input);
+        refreshButton = findViewById(R.id.refresh_button);
+        goButton = findViewById(R.id.go_button);
+
         WebSettings webSettings = mWebView.getSettings();
 
         // --- התחלת השינויים החשובים ---
@@ -51,8 +64,35 @@ public class MainActivity extends Activity {
         // --- סוף השינויים החשובים ---
 
         mWebView.setWebViewClient(new HelloWebViewClient());
+        
+        // עדכון שורת הכתובת כשעמוד חדש נטען
+        mWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                super.onProgressChanged(view, newProgress);
+                if (newProgress == 100) {
+                    urlInput.setText(view.getUrl());
+                }
+            }
+        });
 
-        // מנהל ההורדות (נשאר כמו במקור)
+        // כפתור רענון
+        refreshButton.setOnClickListener(v -> mWebView.reload());
+
+        // כפתור "סע"
+        goButton.setOnClickListener(v -> loadUrl());
+
+        // לחיצה על Enter בשורת הכתובת
+        urlInput.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_GO || 
+                (event != null && event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+                loadUrl();
+                return true;
+            }
+            return false;
+        });
+
+        // מנהל ההורדות
         mWebView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
             try {
                 DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
@@ -75,26 +115,25 @@ public class MainActivity extends Activity {
         // טעינה ראשונית
         if (isNetworkAvailable()) {
             mWebView.loadUrl(myUrl);
+            urlInput.setText(myUrl);
         } else {
             mWebView.loadUrl("file:///android_asset/offline.html");
         }
 
-        // ניהול רשת - תוקן כדי לא לרענן סתם
+        // ניהול רשת
         networkCallback = new NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
                 runOnUiThread(() -> {
-                    // טוען מחדש רק אם היינו במסך "אין אינטרנט"
-                    // אחרת - משאיר את המשתמש איפה שהוא נמצא
                     if (mWebView.getUrl() != null && mWebView.getUrl().startsWith("file:///android_asset")) {
                         mWebView.loadUrl(myUrl);
+                        urlInput.setText(myUrl);
                     }
                 });
             }
             @Override
             public void onLost(Network network) {
                 runOnUiThread(() -> {
-                    // אם אין אינטרנט, עובר למסך אופליין
                     mWebView.loadUrl("file:///android_asset/offline.html");
                 });
             }
@@ -106,6 +145,33 @@ public class MainActivity extends Activity {
         }
     }
 
+    // פונקציה לטעינת URL מהשורת כתובת
+    private void loadUrl() {
+        String url = urlInput.getText().toString().trim();
+        
+        if (url.isEmpty()) {
+            Toast.makeText(this, "הזן כתובת", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // אם לא התחיל ב-http, נוסיף אוטומטית
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            // אם נראה כמו כתובת אתר, נוסיף https
+            if (url.contains(".") && !url.contains(" ")) {
+                url = "https://" + url;
+            } else {
+                // אחרת, חיפוש בגוגל
+                url = "https://www.google.com/search?q=" + Uri.encode(url);
+            }
+        }
+        
+        mWebView.loadUrl(url);
+        urlInput.setText(url);
+        
+        // הסתרת המקלדת
+        urlInput.clearFocus();
+    }
+
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivityManager == null) return false;
@@ -115,11 +181,17 @@ public class MainActivity extends Activity {
         return actNw != null && (actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) || actNw.hasTransport(NetworkCapabilities.TRANSPORT_VPN));
     }
 
-    private static class HelloWebViewClient extends WebViewClient {
+    private class HelloWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            // מאפשר גלישה בתוך האפליקציה במקום לפתוח דפדפן חיצוני
-            return false; 
+            return false;
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            // עדכון שורת הכתובת כשהעמוד נטען
+            urlInput.setText(url);
         }
     }
 
