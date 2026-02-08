@@ -6,7 +6,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.webview.myapplication"
+        applicationId "com.fedex.ida.android"
         minSdk 30
         targetSdk 34
         versionCode 1
