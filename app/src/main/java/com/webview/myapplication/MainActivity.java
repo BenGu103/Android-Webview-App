@@ -22,6 +22,9 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     private WebView mWebView;
     private NetworkCallback networkCallback;
+    
+    // שנה את הכתובת הזו למה שאתה רוצה (למשל יוטיוב)
+    private final String myUrl = "https://www.google.com"; 
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -31,53 +34,81 @@ public class MainActivity extends Activity {
 
         mWebView = findViewById(R.id.activity_main_webview);
         WebSettings webSettings = mWebView.getSettings();
+
+        // --- התחלת השינויים החשובים ---
+        
+        // 1. הפעלת JavaScript
         webSettings.setJavaScriptEnabled(true);
+        
+        // 2. הפעלת זיכרון מקומי (חובה להתחברות לחשבונות!)
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setDatabaseEnabled(true);
+
+        // 3. שינוי הזהות לדפדפן כרום רגיל (מונע חסימה של גוגל)
+        String newUA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Mobile Safari/537.36";
+        webSettings.setUserAgentString(newUA);
+        
+        // --- סוף השינויים החשובים ---
+
         mWebView.setWebViewClient(new HelloWebViewClient());
 
+        // מנהל ההורדות (נשאר כמו במקור)
         mWebView.setDownloadListener((url, userAgent, contentDisposition, mimetype, contentLength) -> {
-            DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
-            request.setMimeType(mimetype);
-            request.addRequestHeader("cookie", CookieManager.getInstance().getCookie(url));
-            request.addRequestHeader("User-Agent", userAgent);
-            request.setDescription("Downloading file...");
-            request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype));
-            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimetype));
-            DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-            dm.enqueue(request);
-            Toast.makeText(getApplicationContext(), "Downloading File", Toast.LENGTH_LONG).show();
+            try {
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                request.setMimeType(mimetype);
+                String cookies = CookieManager.getInstance().getCookie(url);
+                request.addRequestHeader("cookie", cookies);
+                request.addRequestHeader("User-Agent", userAgent);
+                request.setDescription("Downloading file...");
+                request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimetype));
+                request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, URLUtil.guessFileName(url, contentDisposition, mimetype));
+                DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                dm.enqueue(request);
+                Toast.makeText(getApplicationContext(), "Downloading File", Toast.LENGTH_LONG).show();
+            } catch (Exception e) {
+                Toast.makeText(getApplicationContext(), "Download Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
         });
 
+        // טעינה ראשונית
         if (isNetworkAvailable()) {
-            mWebView.loadUrl("https://www.google.com");
+            mWebView.loadUrl(myUrl);
         } else {
             mWebView.loadUrl("file:///android_asset/offline.html");
         }
 
+        // ניהול רשת - תוקן כדי לא לרענן סתם
         networkCallback = new NetworkCallback() {
             @Override
             public void onAvailable(Network network) {
                 runOnUiThread(() -> {
-                    if (!mWebView.getUrl().startsWith("file:///android_asset")) {
-                        mWebView.loadUrl("https://github.com/bishwassagar");
+                    // טוען מחדש רק אם היינו במסך "אין אינטרנט"
+                    // אחרת - משאיר את המשתמש איפה שהוא נמצא
+                    if (mWebView.getUrl() != null && mWebView.getUrl().startsWith("file:///android_asset")) {
+                        mWebView.loadUrl(myUrl);
                     }
                 });
             }
             @Override
             public void onLost(Network network) {
                 runOnUiThread(() -> {
-                    if (mWebView.getUrl() != null) {
-                        mWebView.loadUrl("file:///android_asset/offline.html");
-                    }
+                    // אם אין אינטרנט, עובר למסך אופליין
+                    mWebView.loadUrl("file:///android_asset/offline.html");
                 });
             }
         };
+        
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        connectivityManager.registerDefaultNetworkCallback(networkCallback);
+        if (connectivityManager != null) {
+            connectivityManager.registerDefaultNetworkCallback(networkCallback);
+        }
     }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return false;
         Network nw = connectivityManager.getActiveNetwork();
         if (nw == null) return false;
         NetworkCapabilities actNw = connectivityManager.getNetworkCapabilities(nw);
@@ -87,8 +118,8 @@ public class MainActivity extends Activity {
     private static class HelloWebViewClient extends WebViewClient {
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            view.loadUrl(request.getUrl().toString());
-            return true;
+            // מאפשר גלישה בתוך האפליקציה במקום לפתוח דפדפן חיצוני
+            return false; 
         }
     }
 
@@ -106,7 +137,9 @@ public class MainActivity extends Activity {
         super.onDestroy();
         if (networkCallback != null) {
             ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            connectivityManager.unregisterNetworkCallback(networkCallback);
+            if (connectivityManager != null) {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+            }
         }
     }
 }
