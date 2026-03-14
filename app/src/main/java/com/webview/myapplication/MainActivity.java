@@ -190,6 +190,12 @@ public class MainActivity extends AppCompatActivity {
             handleDownload(url, userAgent, contentDisposition, mimetype)
         );
 
+        tab.webView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (currentTabIndex >= 0 && tabsList.get(currentTabIndex) == tab) {
+                swipeRefreshLayout.setEnabled(scrollY == 0);
+            }
+        });
+
         tabsList.add(tab);
         switchToTab(tabsList.size() - 1);
         
@@ -213,6 +219,7 @@ public class MainActivity extends AppCompatActivity {
         
         urlInput.setText(activeTab.url);
         updateNavigationButtons();
+        swipeRefreshLayout.setEnabled(activeTab.webView.getScrollY() == 0);
     }
 
     private void closeTab(int index) {
