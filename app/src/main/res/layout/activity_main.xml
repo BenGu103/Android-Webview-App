@@ -1,83 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <!-- פס הכלים העליון -->
-    <LinearLayout
-        android:id="@+id/toolbar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="#E0E0E0">
-
-        <!-- שורה ראשונה: כפתורי ניווט + כתובת -->
-        <LinearLayout
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar">
+        
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:gravity="center_vertical">
-
-            <!-- כפתור אחורה -->
-            <Button
-                android:id="@+id/back_button"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:text="◄"
-                android:textSize="20sp"
-                android:background="?attr/selectableItemBackgroundBorderless" />
-
-            <!-- כפתור קדימה -->
-            <Button
-                android:id="@+id/forward_button"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:text="►"
-                android:textSize="20sp"
-                android:background="?attr/selectableItemBackgroundBorderless" />
-
-            <!-- כפתור רענון -->
-            <Button
-                android:id="@+id/refresh_button"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:text="↻"
-                android:textSize="22sp"
-                android:background="?attr/selectableItemBackgroundBorderless" />
-
-            <!-- שורת הכתובת -->
-            <EditText
-                android:id="@+id/url_input"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:padding="10dp"
-                android:hint="הזן כתובת..."
-                android:inputType="textUri"
-                android:imeOptions="actionGo"
-                android:singleLine="true"
-                android:background="@android:drawable/editbox_background"
-                android:textDirection="ltr"
-                android:textSize="14sp" />
-
-            <!-- כפתור סע -->
-            <Button
-                android:id="@+id/go_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="סע"
-                android:textSize="14sp"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp" />
-
-        </LinearLayout>
-
-        <!-- פס טעינה -->
+            android:layout_height="?attr/actionBarSize"
+            android:background="#E0E0E0"
+            app:popupTheme="@style/Theme.AppCompat.Light">
+            
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                
+                <EditText
+                    android:id="@+id/url_input"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:background="@android:drawable/editbox_background"
+                    android:hint="Search or type URL"
+                    android:imeOptions="actionGo"
+                    android:inputType="textUri"
+                    android:singleLine="true"
+                    android:padding="8dp"
+                    android:textColor="#000"
+                    android:textSize="14sp"/>
+                
+                <ImageButton
+                    android:id="@+id/go_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@android:drawable/ic_menu_search"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="8dp"
+                    app:tint="#555555" />
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+        
         <ProgressBar
             android:id="@+id/progress_bar"
             style="?android:attr/progressBarStyleHorizontal"
@@ -85,22 +55,95 @@
             android:layout_height="3dp"
             android:visibility="gone"
             android:progressTint="#2196F3" />
+            
+    </com.google.android.material.appbar.AppBarLayout>
 
-    </LinearLayout>
-
-    <!-- WebView -->
-    <WebView
-        android:id="@+id/activity_main_webview"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/toolbar" />
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_marginBottom="56dp">
+        
+        <FrameLayout
+            android:id="@+id/webview_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+            
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- מיכל למסך מלא (וידאו) -->
+    <!-- Bottom Navigation Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="#EEEEEE"
+        android:orientation="horizontal"
+        android:elevation="8dp">
+        
+        <ImageButton
+            android:id="@+id/back_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@android:drawable/ic_media_previous"
+            android:background="?attr/selectableItemBackground"
+            app:tint="#555555" />
+            
+        <ImageButton
+            android:id="@+id/forward_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@android:drawable/ic_media_next"
+            android:background="?attr/selectableItemBackground"
+            app:tint="#555555" />
+            
+        <ImageButton
+            android:id="@+id/home_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@android:drawable/ic_menu_compass"
+            android:background="?attr/selectableItemBackground"
+            app:tint="#555555" />
+            
+        <FrameLayout
+            android:id="@+id/tabs_button_container"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackground">
+            <TextView
+                android:id="@+id/tabs_count_text"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:background="@drawable/tab_box"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#555555"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </FrameLayout>
+        
+        <ImageButton
+            android:id="@+id/new_tab_button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:src="@android:drawable/ic_menu_add"
+            android:background="?attr/selectableItemBackground"
+            app:tint="#555555" />
+            
+    </LinearLayout>
+
     <FrameLayout
         android:id="@+id/fullscreen_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#000000"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:elevation="10dp"/>
 
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
